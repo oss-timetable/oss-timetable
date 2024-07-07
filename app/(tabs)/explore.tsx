@@ -1,7 +1,37 @@
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, Card, IconButton, SegmentedButtons, Text, useTheme } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
+import { SegmentedButtons, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import WebView from "react-native-webview";
+
+import { fetchFeeds, FeedItem } from '@/models/rss';
+
+const FeedView = () => {
+  const [sources, setSources] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeeds().then((feeds) => {
+      setSources(feeds);
+      setLoading(false);
+    });
+  }, []);
+
+  return (
+    <View>
+      {loading ? (
+        <Text>Loading...</Text>
+      ) : (
+        sources.map((item, index) => (
+          <View key={index}>
+            <Text>{item.title}</Text>
+            <Text>{item.description}</Text>
+          </View>
+        ))
+      )}
+    </View>
+  );
+}
 
 export default function TabTwoScreen() {
   const colors = useTheme().colors;
@@ -27,125 +57,78 @@ export default function TabTwoScreen() {
   });
   const buttons = [
     {
+      icon: "bus-clock",
+      value: "bus"
+    },
+    {
       icon: "calendar-month",
       value: "curriculum"
     },
     {
-      icon: "card-bulleted",
-      value: "exam"
-    },
-    {
-      icon: "format-list-bulleted-type",
-      value: "homework"
-    },
-    {
       icon: "newspaper-variant-outline",
       value: "feed"
+    },
+    {
+      icon: "text-search",
+      value: "icourse"
+    },
+    {
+      icon: 'forum',
+      value: 'ustcforum'
     }
   ];
 
-  const CourseCard = () => {
-    return (
-      <Card mode="outlined">
-        <Card.Title titleVariant={"titleMedium"} title={"数学分析"} />
-        <Card.Content>
-          <View style={{ flexDirection: "row" }}>
-            <Text variant={"headlineSmall"}>09:45 - 11:20</Text>
-            <View style={{ flex: 1 }} />
-            <Text variant={"headlineSmall"}>5103</Text>
-          </View>
-        </Card.Content>
-      </Card>
-    );
-  };
-
-  const ExamCard = () => {
-    return (
-      <Card mode="contained">
-        <Card.Title titleVariant={"titleMedium"} title={"数学分析 - 期中考试"} />
-        <Card.Content>
-          <View style={{ flexDirection: "row" }}>
-            <Text variant={"headlineSmall"}>09:45 - 11:20</Text>
-            <View style={{ flex: 1 }} />
-            <Text variant={"headlineSmall"}>5103</Text>
-          </View>
-        </Card.Content>
-      </Card>
-    );
-  };
-
-  const HomeworkCard = () => {
-    return (
-      <Card mode="elevated">
-        <Card.Title titleVariant={"titleMedium"} title={"数学分析 - Homework 1"} />
-        <Card.Content>
-          <View style={{ flexDirection: "row" }}>
-            <Text variant={"bodyLarge"}>作业内容: ???</Text>
-          </View>
-        </Card.Content>
-        <Card.Actions>
-          <Button icon="trash-can-outline" onPress={() => {
-            console.log("Delete");
-          }}>Delete</Button>
-        </Card.Actions>
-      </Card>
-    );
-  };
-
-  const SectView = ({ defaultExpanded = false }: { defaultExpanded?: boolean }) => {
-    const [expanded, setExpanded] = useState(defaultExpanded);
-
-    return (
-      <View style={{ gap: 20 }}>
-        <Card mode="outlined">
-          <Card.Title
-            titleVariant="headlineSmall"
-            title="Today"
-            subtitle="2024-07-07"
-            right={() => <IconButton size={35} style={{ marginRight: 20 }} icon="dots-horizontal" onPress={() => {
-              setExpanded(!expanded);
-            }} />}
-          />
-        </Card>
-        {expanded && (
-          <View style={{ ...styles.horizontal }}>
-            <View style={{ width: 10, backgroundColor: colors.onSurfaceDisabled, marginRight: 15, borderRadius: 20 }}>
-            </View>
-            <View style={{ flex: 1, gap: 20 }}>
-              <CourseCard />
-              <CourseCard />
-              <ExamCard />
-              <HomeworkCard />
-            </View>
-          </View>
-        )}
-      </View>
-    );
+  const MainView = () => {
+    if (value === "bus") {
+      return (
+        <View style={styles.container}>
+          <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+        </View>
+      );
+    }
+    if (value == "curriculum") {
+      return (
+        <View style={styles.container}>
+          <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+        </View>
+      );
+    }
+    if (value == "feed") {
+      return (
+        <View style={styles.container}>
+          <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+          <FeedView />
+        </View>
+      );
+    }
+    if (value == "icourse") {
+      return (
+        <WebView
+          source={{ uri: "https://icourse.club/" }}
+          style={{ marginTop: 0 }}
+        />
+      );
+    }
+    if (value == "ustcforum") {
+      return (
+        <WebView
+          source={{ uri: "https://ustcforum.com/" }}
+          style={{ marginTop: 0 }}
+        />
+      );
+    }
   };
 
   return (
     <SafeAreaView style={styles.background} edges={["top"]}>
-      <View style={styles.container}>
-        <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+      <MainView />
+      <View style={{ paddingBottom: 10 }}>
+        <SegmentedButtons
+          value={value}
 
-
-        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-          <View style={{ gap: 20, flex: 1 }}>
-            <SectView defaultExpanded={true} />
-            <SectView />
-
-            <View style={{ height: 40 }} />
-          </View>
-        </ScrollView>
-
-        <View style={{ paddingBottom: 10 }}>
-          <SegmentedButtons
-            value={value}
-
-            onValueChange={setValue}
-            buttons={buttons}
-          />
-        </View>
+          onValueChange={setValue}
+          buttons={buttons}
+        />
       </View>
     </SafeAreaView>
   );
