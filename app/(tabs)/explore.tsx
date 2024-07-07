@@ -1,102 +1,152 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
-
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Button, Card, IconButton, SegmentedButtons, Text, useTheme } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
 
 export default function TabTwoScreen() {
+  const colors = useTheme().colors;
+  const [value, setValue] = useState("curriculum");
+
+  const styles = StyleSheet.create({
+    background: {
+      backgroundColor: colors.background,
+      flex: 1
+    },
+    container: {
+      flex: 1,
+      paddingHorizontal: 10
+    },
+    title: {
+      paddingVertical: 10,
+      fontWeight: "bold"
+    },
+    horizontal: {
+      flexDirection: "row",
+      justifyContent: "flex-start"
+    }
+  });
+  const buttons = [
+    {
+      icon: "calendar-month",
+      value: "curriculum"
+    },
+    {
+      icon: "card-bulleted",
+      value: "exam"
+    },
+    {
+      icon: "format-list-bulleted-type",
+      value: "homework"
+    },
+    {
+      icon: "newspaper-variant-outline",
+      value: "feed"
+    }
+  ];
+
+  const CourseCard = () => {
+    return (
+      <Card mode="outlined">
+        <Card.Title titleVariant={"titleMedium"} title={"数学分析"} />
+        <Card.Content>
+          <View style={{ flexDirection: "row" }}>
+            <Text variant={"headlineSmall"}>09:45 - 11:20</Text>
+            <View style={{ flex: 1 }} />
+            <Text variant={"headlineSmall"}>5103</Text>
+          </View>
+        </Card.Content>
+      </Card>
+    );
+  };
+
+  const ExamCard = () => {
+    return (
+      <Card mode="contained">
+        <Card.Title titleVariant={"titleMedium"} title={"数学分析 - 期中考试"} />
+        <Card.Content>
+          <View style={{ flexDirection: "row" }}>
+            <Text variant={"headlineSmall"}>09:45 - 11:20</Text>
+            <View style={{ flex: 1 }} />
+            <Text variant={"headlineSmall"}>5103</Text>
+          </View>
+        </Card.Content>
+      </Card>
+    );
+  };
+
+  const HomeworkCard = () => {
+    return (
+      <Card mode="elevated">
+        <Card.Title titleVariant={"titleMedium"} title={"数学分析 - Homework 1"} />
+        <Card.Content>
+          <View style={{ flexDirection: "row" }}>
+            <Text variant={"bodyLarge"}>作业内容: ???</Text>
+          </View>
+        </Card.Content>
+        <Card.Actions>
+          <Button icon="trash-can-outline" onPress={() => {
+            console.log("Delete");
+          }}>Delete</Button>
+        </Card.Actions>
+      </Card>
+    );
+  };
+
+  const SectView = ({ defaultExpanded = false }: { defaultExpanded?: boolean }) => {
+    const [expanded, setExpanded] = useState(defaultExpanded);
+
+    return (
+      <View style={{ gap: 20 }}>
+        <Card mode="outlined">
+          <Card.Title
+            titleVariant="headlineSmall"
+            title="Today"
+            subtitle="2024-07-07"
+            right={() => <IconButton size={35} style={{ marginRight: 20 }} icon="dots-horizontal" onPress={() => {
+              setExpanded(!expanded);
+            }} />}
+          />
+        </Card>
+        {expanded && (
+          <View style={{ ...styles.horizontal }}>
+            <View style={{ width: 10, backgroundColor: colors.onSurfaceDisabled, marginRight: 15, borderRadius: 20 }}>
+            </View>
+            <View style={{ flex: 1, gap: 20 }}>
+              <CourseCard />
+              <CourseCard />
+              <ExamCard />
+              <HomeworkCard />
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-          to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.background} edges={["top"]}>
+      <View style={styles.container}>
+        <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+
+
+        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+          <View style={{ gap: 20, flex: 1 }}>
+            <SectView defaultExpanded={true} />
+            <SectView />
+
+            <View style={{ height: 40 }} />
+          </View>
+        </ScrollView>
+
+        <View style={{ paddingBottom: 10 }}>
+          <SegmentedButtons
+            value={value}
+
+            onValueChange={setValue}
+            buttons={buttons}
+          />
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});

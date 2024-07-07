@@ -1,6 +1,7 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, Card, Text, useTheme } from "react-native-paper";
+import { Card, Checkbox, IconButton, Menu, Text, useTheme } from "react-native-paper";
 import { ScrollView, StyleSheet, View } from "react-native";
+import { useState } from "react";
 
 export default function HomeScreen() {
   const colors = useTheme().colors;
@@ -43,8 +44,8 @@ export default function HomeScreen() {
       <View style={styles.horizontal}>
         <View style={styles.verticalBar} />
         <View style={styles.flexItem}>
-          <Text variant="bodySmall">课程名</Text>
-          <Text variant="bodyLarge">5104 教师名</Text>
+          <Text variant="bodyLarge">数学分析</Text>
+          <Text variant="bodySmall">5104</Text>
           <Text variant="bodySmall">08:30 - 11:45</Text>
         </View>
       </View>
@@ -60,74 +61,112 @@ export default function HomeScreen() {
             <CourseCard />
             <CourseCard />
             <CourseCard />
-            <CourseCard />
           </View>
         </Card.Content>
       </Card>
+    );
+  };
+
+  const SingleExamCard = () => {
+    return (
+      <View style={{ ...styles.horizontal, alignItems: "flex-end" }}>
+        <View style={styles.verticalBar} />
+        <View style={styles.flexItem}>
+          <Text variant="bodyLarge">数学分析 期中考试</Text>
+          <Text variant="bodySmall">5104</Text>
+          <Text variant="bodySmall">07-04 08:30 - 11:45</Text>
+        </View>
+        <Text variant="bodyLarge">3 days left</Text>
+      </View>
     );
   };
 
   const ExamCard = () => {
     return (
       <Card>
-        <Card.Title titleVariant={"titleMedium"} title={"Exams"} />
+        <Card.Title titleVariant="titleLarge" title={"Exams"} />
         <Card.Content>
           <View style={{ gap: 10 }}>
-            <CourseCard />
-            <CourseCard />
-            <CourseCard />
-            <CourseCard />
+            <SingleExamCard />
+            <SingleExamCard />
+            <SingleExamCard />
           </View>
         </Card.Content>
       </Card>
+    );
+  };
+
+  const SingleHomeworkCard = () => {
+    return (
+      <View style={{ ...styles.horizontal, alignItems: "flex-end" }}>
+        <View style={styles.verticalBar} />
+        <View style={{ ...styles.flexItem }}>
+          <Text variant="bodyLarge">数学分析 作业 1</Text>
+          <Text variant="bodySmall" numberOfLines={1}>DDL: 07-04 08:30 - 11:45</Text>
+        </View>
+        <Text variant="bodyLarge">3 days left</Text>
+      </View>
     );
   };
 
   const HomeworkCard = () => {
     return (
       <Card>
-        <Card.Title titleVariant={"titleMedium"} title={"Homework"} />
+        <Card.Title titleVariant={"titleLarge"} title={"Homework"} />
         <Card.Content>
           <View style={{ gap: 10 }}>
-            <CourseCard />
-            <CourseCard />
-            <CourseCard />
-            <CourseCard />
+            <SingleHomeworkCard />
+            <SingleHomeworkCard />
+            <SingleHomeworkCard />
           </View>
         </Card.Content>
       </Card>
     );
   };
 
+  const [showMenu, setShowMenu] = useState(false);
+  const [showCurriculum, setShowCurriculum] = useState(true);
+  const [showExam, setShowExam] = useState(true);
+  const [showHomework, setShowHomework] = useState(true);
+
   return (
     <SafeAreaView style={styles.background} edges={["top"]}>
       <View style={styles.container}>
-        <View style={{ paddingBottom: 10 }}>
+        <View style={{ ...styles.horizontal, paddingBottom: 10, alignItems: "center" }}>
           <Text variant="headlineMedium" style={styles.title}>Home</Text>
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            <View style={styles.horizontalWithGap}>
-              <Button mode="outlined">Curriculum</Button>
-              <Button mode="outlined">Exams</Button>
-              <Button mode="outlined">Homeworks</Button>
-              <Button mode="outlined">News</Button>
-            </View>
-          </ScrollView>
+          <View style={{ flex: 1 }} />
+          <Menu
+            visible={showMenu}
+            onDismiss={() => setShowMenu(false)}
+            anchor={
+              <IconButton onPress={() => setShowMenu(true)} icon="format-list-bulleted" />
+            }>
+            <Checkbox.Item status={showCurriculum ? "checked" : "unchecked"} label="Curriculum"
+                           onPress={() => setShowCurriculum(!showCurriculum)} />
+            <Checkbox.Item status={showExam ? "checked" : "unchecked"} label="Exam"
+                           onPress={() => setShowExam(!showExam)} />
+            <Checkbox.Item status={showHomework ? "checked" : "unchecked"} label="Homework"
+                           onPress={() => setShowHomework(!showHomework)} />
+          </Menu>
+
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
           <View style={{ gap: 20, flex: 1 }}>
-            <View style={styles.horizontalWithGap}>
-              <View style={styles.flexItem}>
-                <CurriculumCard />
-              </View>
-              <View style={styles.flexItem}>
-                <CurriculumCard title="Tomorrow" />
-              </View>
-            </View>
 
-            <ExamCard />
+            {showCurriculum && (
+              <View style={styles.horizontalWithGap}>
+                <View style={styles.flexItem}>
+                  <CurriculumCard />
+                </View>
+                <View style={styles.flexItem}>
+                  <CurriculumCard title="Tomorrow" />
+                </View>
+              </View>
+            )}
 
-            <HomeworkCard />
+            {showExam && (<ExamCard />)}
+            {showHomework && (<HomeworkCard />)}
 
             <View style={{ height: 20 }} />
           </View>
