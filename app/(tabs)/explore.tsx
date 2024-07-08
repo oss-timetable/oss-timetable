@@ -1,10 +1,11 @@
-import { StyleSheet, View } from "react-native";
-import { SegmentedButtons, Text, useTheme } from "react-native-paper";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Card, SegmentedButtons, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import WebView from "react-native-webview";
 
-import { fetchFeeds, FeedItem } from '@/models/rss';
+import { FeedItem, fetchFeeds } from "@/models/rss";
+import { openBrowserAsync } from "expo-web-browser";
 
 const FeedView = () => {
   const [sources, setSources] = useState<FeedItem[]>([]);
@@ -18,20 +19,38 @@ const FeedView = () => {
   }, []);
 
   return (
-    <View>
+    <ScrollView>
       {loading ? (
         <Text>Loading...</Text>
       ) : (
-        sources.map((item, index) => (
-          <View key={index}>
-            <Text>{item.title}</Text>
-            <Text>{item.description}</Text>
-          </View>
-        ))
+        <View style={{ gap: 20 }}>
+          {
+            sources.map((item, index) => (
+              <Card
+                mode="outlined"
+                onPress={() => {
+                  openBrowserAsync(item.link);
+                }}
+                key={index}
+              >
+                <Card.Title
+                  title={item.title}
+                  subtitle={item.dateString}
+                  right={(props) => (
+                    <Text {...props} style={{ color: "gray", marginRight: 20 }}>{item.source}</Text>
+                  )}
+                />
+                <Card.Content>
+                  <Text numberOfLines={3}>{item.description}</Text>
+                </Card.Content>
+              </Card>
+            ))}
+        </View>
       )}
-    </View>
+      <View style={{ height: 40 }} />
+    </ScrollView>
   );
-}
+};
 
 export default function TabTwoScreen() {
   const colors = useTheme().colors;
@@ -73,8 +92,8 @@ export default function TabTwoScreen() {
       value: "icourse"
     },
     {
-      icon: 'forum',
-      value: 'ustcforum'
+      icon: "forum",
+      value: "ustcforum"
     }
   ];
 

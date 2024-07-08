@@ -4,6 +4,7 @@ export type FeedItem = {
   description: string;
   dateString: string;
   date: number; // timestamp
+  source: string,
 };
 
 const reformatDate = (dateString: string) => {
@@ -25,20 +26,24 @@ export const fetchFeeds = async () => {
   );
   const data = await req.json();
   console.log(data.sources.map((source: any) => source.jsonURL));
-  const feedSources = data.sources.map((source: any) => source.jsonURL);
   const feeds: FeedItem[] = [];
-  const jobs = feedSources.map(async (source: string) => {
-    const req = await fetch(source);
-    const feed = await req.json();
-    feeds.push(
-      ...feed.items.map((item: any) => ({
-        title: item.title,
-        link: item.link,
-        description: item.description,
-        dateString: item.pubDate,
-        date: new Date(item.pubDate).getTime()
-      }))
-    );
+  const jobs = data.sources.map(async (source: any) => {
+    try {
+      const req = await fetch(source.jsonURL);
+      const feed = await req.json();
+      feeds.push(
+        ...feed.map((item: any) => ({
+          title: item.title,
+          link: item.link,
+          description: item.description,
+          dateString: item.dateString,
+          date: item.date,
+          source: source.locales.zh,
+        }))
+      );
+    } catch (e) {
+      console.error(`Failed to fetch ${source}: ${e}`);
+    }
   });
   await Promise.all(jobs);
   feeds.sort((a, b) => b.date - a.date);
