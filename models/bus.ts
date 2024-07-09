@@ -16,6 +16,21 @@ export type RouteSchedule = {
   time: (string | undefined)[][]
 }
 
+export const nextSchedule = (routeSchedule: RouteSchedule) => {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const curTime = hours * 60 + minutes;
+  const times = routeSchedule.time.map((time) => {
+    const [hour, minute] = time[0]!.split(":").map((n) => parseInt(n));
+    return { time: hour * 60 + minute, schedule: time };
+  }).filter((time) => time.time > curTime).sort((a, b) => a.time - b.time);
+  if (times.length === 0) {
+    return null;
+  }
+  return times[0].schedule;
+};
+
 export type Message = {
   message: string,
   url: string

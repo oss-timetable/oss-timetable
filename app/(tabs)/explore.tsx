@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import WebView from "react-native-webview";
 
 import { FeedItem, fetchFeeds } from "@/models/rss";
-import { BusData, calcIsWeekday, fetchBusData, RouteSchedule } from "@/models/bus";
+import { BusData, calcIsWeekday, fetchBusData, nextSchedule, RouteSchedule } from "@/models/bus";
 import { openBrowserAsync } from "expo-web-browser";
 
 const BusView = () => {
@@ -17,6 +17,8 @@ const BusView = () => {
       paddingHorizontal: 20
     }
   });
+
+  const colors = useTheme().colors;
 
   const [busData, setBusData] = useState<BusData>();
   const [loading, setLoading] = useState(true);
@@ -54,12 +56,6 @@ const BusView = () => {
             setRouteSchedule(busData![value === "weekday" ? "weekday_routes" : "weekend_routes"][0]);
           }} />
 
-          {/*<List.Accordion title={routeSchedule!.route.campuses.map((campus) => campus.name).join(" - ")}>*/}
-          {/*  {routeSchedule!.time.map((time, index) => (*/}
-          {/*    <List.Item key={index} title={time.map((k) => k ?? "即停").join(" - ")} />*/}
-          {/*  ))}*/}
-          {/*</List.Accordion>*/}
-
           <List.Accordion
             title={routeSchedule!.route.campuses.map((campus) => campus.name).join(" - ")}
             style={{ marginVertical: 10 }}
@@ -70,7 +66,6 @@ const BusView = () => {
               <List.Item
                 key={index}
                 title={routeSchedule.route.campuses.map((campus) => campus.name).join(" - ")}
-                // description={routeSchedule.time.map((time) => time.join(" - ")).join("\n")}
                 onPress={() => {
                   setRouteSchedule(routeSchedule);
                   setRouteSchedulePickerExpanded(false);
@@ -91,9 +86,14 @@ const BusView = () => {
               <Divider style={{ marginVertical: 5 }} />
 
               {routeSchedule!.time.map((time, index) => (
-                <View key={index} style={styles.schedule}>
+                <View key={index} style={{
+                  ...styles.schedule,
+                  borderWidth: time === nextSchedule(routeSchedule!) ? 1 : 0,
+                  borderRadius: 15,
+                  paddingVertical: time === nextSchedule(routeSchedule!) ? 5 : 0
+                }}>
                   {time.map((k, i) => (
-                    <Text key={i}>{k ?? "即停"}</Text>
+                    <Text key={i} style={{fontVariant: ['tabular-nums']}}>{k ?? "即停"}</Text>
                   ))}
                 </View>
               ))}
@@ -242,7 +242,7 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={styles.background} edges={["top"]}>
       <MainView />
-      <View style={{ paddingVertical: 10 }}>
+      <View style={{ paddingVertical: 10, paddingHorizontal: 5 }}>
         <SegmentedButtons
           value={value}
           onValueChange={setValue}
