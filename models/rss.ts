@@ -25,7 +25,6 @@ export const fetchFeeds = async () => {
     "https://oss-timetable.github.io/ustc/data/feed_source.json"
   );
   const data = await req.json();
-  console.log(data.sources.map((source: any) => source.jsonURL));
   const feeds: FeedItem[] = [];
   const jobs = data.sources.map(async (source: any) => {
     try {
