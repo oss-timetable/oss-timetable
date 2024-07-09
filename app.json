@@ -33,6 +33,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "21cfa598-c3ed-492a-8141-7041a7dc8281"
+      }
+    },
+    "owner": "oss-timetable"
   }
 }

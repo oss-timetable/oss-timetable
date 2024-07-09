@@ -7,6 +7,10 @@ import WebView from "react-native-webview";
 import { FeedItem, fetchFeeds } from "@/models/rss";
 import { openBrowserAsync } from "expo-web-browser";
 
+const BusView = () => {
+
+}
+
 const FeedView = () => {
   const [sources, setSources] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +23,7 @@ const FeedView = () => {
   }, []);
 
   return (
-    <ScrollView>
+    <ScrollView showsVerticalScrollIndicator={false}>
       {loading ? (
         <Text>Loading...</Text>
       ) : (
@@ -101,21 +105,21 @@ export default function TabTwoScreen() {
     if (value === "bus") {
       return (
         <View style={styles.container}>
-          <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+          <Text variant="headlineMedium" style={styles.title}>Bus Timetable</Text>
         </View>
       );
     }
     if (value == "curriculum") {
       return (
         <View style={styles.container}>
-          <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+          <Text variant="headlineMedium" style={styles.title}>Courses</Text>
         </View>
       );
     }
     if (value == "feed") {
       return (
         <View style={styles.container}>
-          <Text variant="headlineMedium" style={styles.title}>Explore</Text>
+          <Text variant="headlineMedium" style={styles.title}>News</Text>
           <FeedView />
         </View>
       );
