@@ -1,7 +1,23 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Card, Checkbox, IconButton, Menu, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Button, Card, Checkbox, IconButton, Menu, Text, useTheme } from "react-native-paper";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Exam,
+  examDateLeftString,
+  examDateString,
+  getExams,
+  getHomeworks,
+  getTodayLectures,
+  getTomorrowLectures,
+  getUnfinishedExams,
+  getUnfinishedHomeworks,
+  Homework,
+  homeworkDateLeftString,
+  homeworkDeadlineString,
+  Lecture,
+  lectureDateString
+} from "@/models/course";
 
 export default function HomeScreen() {
   const colors = useTheme().colors;
@@ -39,90 +55,233 @@ export default function HomeScreen() {
     }
   });
 
-  const CourseCard = () => {
+  const CourseCard = ({ lecture }: { lecture: Lecture }) => {
     return (
       <View style={styles.horizontal}>
         <View style={styles.verticalBar} />
         <View style={styles.flexItem}>
-          <Text variant="bodyLarge">数学分析</Text>
-          <Text variant="bodySmall">5104</Text>
-          <Text variant="bodySmall">08:30 - 11:45</Text>
+          <Text variant="bodyLarge">{lecture!.name}</Text>
+          <Text variant="bodySmall">{lecture!.location}</Text>
+          <Text variant="bodySmall">{lectureDateString(lecture!)}</Text>
         </View>
       </View>
     );
   };
 
-  const CurriculumCard = ({ title = "Today" }: { title?: string }) => {
+  const CurriculumCard = ({ type = "today" }: { type: "today" | "tomorrow" }) => {
+    const [lectures, setLectures] = useState<Lecture[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      if (type === "today") {
+        getTodayLectures().then((lectures) => {
+          setLectures(lectures);
+          setLoading(false);
+        });
+      }
+      if (type === "tomorrow") {
+        getTomorrowLectures().then((lectures) => {
+          setLectures(lectures);
+          setLoading(false);
+        });
+      }
+    }, []);
+
+    const title = type === "today" ? "Today" : "Tomorrow";
+
     return (
       <Card>
         <Card.Title titleVariant={"titleMedium"} title={title} />
         <Card.Content>
-          <View style={{ gap: 10 }}>
-            <CourseCard />
-            <CourseCard />
-            <CourseCard />
-          </View>
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            lectures.length === 0 ? (
+              <Text>No lectures</Text>
+            ) : (
+              <View style={{ gap: 10 }}>
+                {lectures.map((lecture, index) => (
+                  <CourseCard key={index} lecture={lecture} />
+                ))}
+              </View>
+            )
+          )}
         </Card.Content>
       </Card>
     );
   };
 
-  const SingleExamCard = () => {
+  const SingleExamCard = ({ exam }: { exam: Exam }) => {
     return (
       <View style={{ ...styles.horizontal, alignItems: "flex-end" }}>
         <View style={styles.verticalBar} />
         <View style={styles.flexItem}>
-          <Text variant="bodyLarge">数学分析 期中考试</Text>
-          <Text variant="bodySmall">5104</Text>
-          <Text variant="bodySmall">07-04 08:30 - 11:45</Text>
+          <Text variant="bodyLarge">{`${exam.name} - ${exam.examType}`}</Text>
+          <Text variant="bodySmall">{exam.location}</Text>
+          <Text variant="bodySmall">{examDateString(exam)}</Text>
         </View>
-        <Text variant="bodyLarge">3 days left</Text>
+        <Text variant="bodyLarge">{examDateLeftString(exam)}</Text>
       </View>
     );
   };
 
   const ExamCard = () => {
+    const [exams, setExams] = useState<Exam[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showFinished, setShowFinished] = useState(false);
+
+    useEffect(() => {
+      getUnfinishedExams().then((exams) => {
+        setExams(exams);
+        setLoading(false);
+      });
+    }, []);
+
     return (
       <Card>
-        <Card.Title titleVariant="titleLarge" title={"Exams"} />
+        <Card.Title titleVariant="titleMedium" title={"Exam"} right={() => {
+          return <Button
+            mode="text"
+            compact={true}
+            icon={showFinished ? "eye-off" : "eye"}
+            onPress={() => {
+              setLoading(true);
+              if (!showFinished) {
+                getExams().then((exams) => {
+                  setExams(exams);
+                  setShowFinished(!showFinished);
+                  setLoading(false);
+                });
+              } else {
+                getUnfinishedExams().then((exams) => {
+                  setExams(exams);
+                  setShowFinished(!showFinished);
+                  setLoading(false);
+                });
+              }
+            }}
+          >
+            {showFinished ? "Hide finished" : "Show finished"}
+          </Button>;
+        }} />
         <Card.Content>
-          <View style={{ gap: 10 }}>
-            <SingleExamCard />
-            <SingleExamCard />
-            <SingleExamCard />
-          </View>
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            exams.length === 0 ? (
+              <Text>No exams</Text>
+            ) : (
+              <View style={{ gap: 10 }}>
+                {exams.map((exam, index) => (
+                  <SingleExamCard key={index} exam={exam} />
+                ))}
+              </View>
+            )
+          )}
         </Card.Content>
       </Card>
     );
   };
 
-  const SingleHomeworkCard = () => {
+  // const SingleHomeworkCard = () => {
+  //   return (
+  //     <View style={{ ...styles.horizontal, alignItems: "flex-end" }}>
+  //       <View style={styles.verticalBar} />
+  //       <View style={{ ...styles.flexItem }}>
+  //         <Text variant="bodyLarge">数学分析 作业 1</Text>
+  //         <Text variant="bodySmall" numberOfLines={1}>DDL: 07-04 08:30 - 11:45</Text>
+  //       </View>
+  //       <Text variant="bodyLarge">3 days left</Text>
+  //     </View>
+  //   );
+  // };
+  //
+  // const HomeworkCard = () => {
+  //   return (
+  //     <Card>
+  //       <Card.Title titleVariant={"titleMedium"} title={"Homework"} />
+  //       <Card.Content>
+  //         <View style={{ gap: 10 }}>
+  //           <SingleHomeworkCard />
+  //           <SingleHomeworkCard />
+  //           <SingleHomeworkCard />
+  //         </View>
+  //       </Card.Content>
+  //     </Card>
+  //   );
+  // };
+
+  const SingleHomeworkCard = ({ homework }: { homework: Homework }) => {
     return (
       <View style={{ ...styles.horizontal, alignItems: "flex-end" }}>
         <View style={styles.verticalBar} />
         <View style={{ ...styles.flexItem }}>
-          <Text variant="bodyLarge">数学分析 作业 1</Text>
-          <Text variant="bodySmall" numberOfLines={1}>DDL: 07-04 08:30 - 11:45</Text>
+          <Text variant="bodyLarge">{homework.name}</Text>
+          <Text variant="bodySmall" numberOfLines={1}>{`DDL: ${homeworkDeadlineString(homework)}`}</Text>
         </View>
-        <Text variant="bodyLarge">3 days left</Text>
+        <Text variant="bodyLarge">{homeworkDateLeftString(homework)}</Text>
       </View>
     );
   };
 
   const HomeworkCard = () => {
+    const [homeworks, setHomeworks] = useState<Homework[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showOverdue, setShowOverdue] = useState(false);
+
+    useEffect(() => {
+      getUnfinishedHomeworks().then((homeworks) => {
+        setHomeworks(homeworks);
+        setLoading(false);
+      });
+    }, []);
+
     return (
       <Card>
-        <Card.Title titleVariant={"titleLarge"} title={"Homework"} />
+        <Card.Title titleVariant="titleMedium" title="Homework" right={() => {
+          return <Button
+            mode="text"
+            compact={true}
+            icon={showOverdue ? "eye-off" : "eye"}
+            onPress={() => {
+              setLoading(true);
+              if (!showOverdue) {
+                getHomeworks().then((homeworks) => {
+                  setHomeworks(homeworks);
+                  setShowOverdue(!showOverdue);
+                  setLoading(false);
+                });
+              } else {
+                getUnfinishedHomeworks().then((homeworks) => {
+                  setHomeworks(homeworks);
+                  setShowOverdue(!showOverdue);
+                  setLoading(false);
+                });
+              }
+            }}
+          >
+            {showOverdue ? "Hide overdue" : "Show overdue"}
+          </Button>;
+        }} />
         <Card.Content>
-          <View style={{ gap: 10 }}>
-            <SingleHomeworkCard />
-            <SingleHomeworkCard />
-            <SingleHomeworkCard />
-          </View>
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            homeworks.length === 0 ? (
+              <Text>No homework</Text>
+            ) : (
+              <View style={{ gap: 10 }}>
+                {homeworks.map((homework, index) => (
+                  <SingleHomeworkCard key={index} homework={homework} />
+                ))}
+              </View>
+            )
+          )}
         </Card.Content>
       </Card>
     );
   };
+
 
   const [showMenu, setShowMenu] = useState(false);
   const [showCurriculum, setShowCurriculum] = useState(true);
@@ -157,10 +316,10 @@ export default function HomeScreen() {
             {showCurriculum && (
               <View style={styles.horizontalWithGap}>
                 <View style={styles.flexItem}>
-                  <CurriculumCard />
+                  <CurriculumCard type="today" />
                 </View>
                 <View style={styles.flexItem}>
-                  <CurriculumCard title="Tomorrow" />
+                  <CurriculumCard type="tomorrow" />
                 </View>
               </View>
             )}
