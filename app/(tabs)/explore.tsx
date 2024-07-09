@@ -7,6 +7,7 @@ import WebView from "react-native-webview";
 import { FeedItem, fetchFeeds } from "@/models/rss";
 import { BusData, calcIsWeekday, fetchBusData, nextSchedule, RouteSchedule } from "@/models/bus";
 import { openBrowserAsync } from "expo-web-browser";
+import { Course, getCourses } from "@/models/course";
 
 const BusView = () => {
   const styles = StyleSheet.create({
@@ -93,7 +94,7 @@ const BusView = () => {
                   paddingVertical: time === nextSchedule(routeSchedule!) ? 5 : 0
                 }}>
                   {time.map((k, i) => (
-                    <Text key={i} style={{fontVariant: ['tabular-nums']}}>{k ?? "即停"}</Text>
+                    <Text key={i} style={{ fontVariant: ["tabular-nums"] }}>{k ?? "即停"}</Text>
                   ))}
                 </View>
               ))}
@@ -101,6 +102,51 @@ const BusView = () => {
           )}
         </View>
       )}
+    </ScrollView>
+  );
+};
+
+const CourseView = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCourses().then((courses) => {
+      setCourses(courses);
+      setLoading(false);
+    });
+  }, []);
+
+  return (
+    <ScrollView showsVerticalScrollIndicator={false}>
+      {loading ? (
+        <View style={{ alignSelf: "center", height: "100%" }}>
+          <ActivityIndicator />
+        </View>
+      ) : (
+        <View style={{ gap: 20 }}>
+          {
+            courses.map((course, index) => (
+              <Card
+                mode="outlined"
+                key={index}
+                onPress={async () => {
+                  await openBrowserAsync(`https://oss-timetable.github.io/ustc/course/${course.id}`);
+                }}
+              >
+                <Card.Title
+                  title={course.name}
+                  subtitle={course.teacherName}
+                />
+                <Card.Content>
+                  <Text>{course.dateTimePlacePersonText}</Text>
+                  {/*<Text>{course.time}</Text>*/}
+                </Card.Content>
+              </Card>
+            ))}
+        </View>
+      )}
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 };
@@ -210,6 +256,7 @@ export default function ExploreScreen() {
       return (
         <View style={styles.container}>
           <Text variant="headlineMedium" style={styles.title}>Courses</Text>
+          <CourseView />
         </View>
       );
     }
