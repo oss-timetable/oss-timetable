@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Card, List, SegmentedButtons, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Card, Divider, List, SegmentedButtons, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import WebView from "react-native-webview";
@@ -82,11 +82,13 @@ const BusView = () => {
 
           {!routeSchedulePickerExpanded && (
             <View>
-              <View style={{ ...styles.schedule, borderBottomWidth: 0.2, paddingBottom: 10 }}>
+              <View style={{ ...styles.schedule }}>
                 {routeSchedule!.route.campuses.map((campus, index) => (
                   <Text key={index}>{campus.name}</Text>
                 ))}
               </View>
+
+              <Divider style={{ marginVertical: 5 }} />
 
               {routeSchedule!.time.map((time, index) => (
                 <View key={index} style={styles.schedule}>
