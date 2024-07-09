@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Card, SegmentedButtons, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Card, SegmentedButtons, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import WebView from "react-native-webview";
@@ -9,7 +9,7 @@ import { openBrowserAsync } from "expo-web-browser";
 
 const BusView = () => {
 
-}
+};
 
 const FeedView = () => {
   const [sources, setSources] = useState<FeedItem[]>([]);
@@ -25,7 +25,9 @@ const FeedView = () => {
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       {loading ? (
-        <Text>Loading...</Text>
+        <View style={{ alignSelf: "center", height: "100%" }}>
+          <ActivityIndicator />
+        </View>
       ) : (
         <View style={{ gap: 20 }}>
           {
@@ -56,7 +58,7 @@ const FeedView = () => {
   );
 };
 
-export default function TabTwoScreen() {
+export default function ExploreScreen() {
   const colors = useTheme().colors;
   const [value, setValue] = useState("curriculum");
 
@@ -145,10 +147,9 @@ export default function TabTwoScreen() {
   return (
     <SafeAreaView style={styles.background} edges={["top"]}>
       <MainView />
-      <View style={{ paddingBottom: 10 }}>
+      <View style={{ paddingVertical: 10 }}>
         <SegmentedButtons
           value={value}
-
           onValueChange={setValue}
           buttons={buttons}
         />

@@ -2,7 +2,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
   const colors = useTheme().colors;
   const styles = StyleSheet.create({
     background: {
