@@ -12,7 +12,12 @@
     },
     "production": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "ios": {
+        "cocoapods": "1.15.2",
+        "image": "latest"
       }
     }
   },
