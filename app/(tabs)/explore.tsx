@@ -1,14 +1,106 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Card, SegmentedButtons, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Card, List, SegmentedButtons, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import WebView from "react-native-webview";
 
 import { FeedItem, fetchFeeds } from "@/models/rss";
+import { BusData, calcIsWeekday, fetchBusData, RouteSchedule } from "@/models/bus";
 import { openBrowserAsync } from "expo-web-browser";
 
 const BusView = () => {
+  const styles = StyleSheet.create({
+    schedule: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginVertical: 5,
+      paddingHorizontal: 20
+    }
+  });
 
+  const [busData, setBusData] = useState<BusData>();
+  const [loading, setLoading] = useState(true);
+
+  const [routeSchedule, setRouteSchedule] = useState<RouteSchedule>();
+  const [routeSchedulePickerExpanded, setRouteSchedulePickerExpanded] = useState(false);
+  const [isWeekday, setIsWeekday] = useState(calcIsWeekday() ? "weekday" : "weekend");
+
+  useEffect(() => {
+    fetchBusData().then((data) => {
+      setBusData(data);
+      setRouteSchedule(data[isWeekday === "weekday" ? "weekday_routes" : "weekend_routes"][0]);
+      setLoading(false);
+    });
+  }, []);
+
+  return (
+    <ScrollView showsVerticalScrollIndicator={false}>
+      {loading ? (
+        <View style={{ alignSelf: "center", height: "100%" }}>
+          <ActivityIndicator />
+        </View>
+      ) : (
+        <View>
+          <SegmentedButtons buttons={[
+            {
+              label: "Weekday",
+              value: "weekday"
+            }, {
+              label: "Weekend",
+              value: "weekend"
+            }
+          ]} value={isWeekday} onValueChange={(value) => {
+            setIsWeekday(value);
+            setRouteSchedule(busData![value === "weekday" ? "weekday_routes" : "weekend_routes"][0]);
+          }} />
+
+          {/*<List.Accordion title={routeSchedule!.route.campuses.map((campus) => campus.name).join(" - ")}>*/}
+          {/*  {routeSchedule!.time.map((time, index) => (*/}
+          {/*    <List.Item key={index} title={time.map((k) => k ?? "即停").join(" - ")} />*/}
+          {/*  ))}*/}
+          {/*</List.Accordion>*/}
+
+          <List.Accordion
+            title={routeSchedule!.route.campuses.map((campus) => campus.name).join(" - ")}
+            style={{ marginVertical: 10 }}
+            expanded={routeSchedulePickerExpanded}
+            onPress={() => setRouteSchedulePickerExpanded(!routeSchedulePickerExpanded)}
+          >
+            {busData![isWeekday === "weekday" ? "weekday_routes" : "weekend_routes"].map((routeSchedule, index) => (
+              <List.Item
+                key={index}
+                title={routeSchedule.route.campuses.map((campus) => campus.name).join(" - ")}
+                // description={routeSchedule.time.map((time) => time.join(" - ")).join("\n")}
+                onPress={() => {
+                  setRouteSchedule(routeSchedule);
+                  setRouteSchedulePickerExpanded(false);
+                }}
+              />
+            ))}
+          </List.Accordion>
+
+
+          {!routeSchedulePickerExpanded && (
+            <View>
+              <View style={{ ...styles.schedule, borderBottomWidth: 0.2, paddingBottom: 10 }}>
+                {routeSchedule!.route.campuses.map((campus, index) => (
+                  <Text key={index}>{campus.name}</Text>
+                ))}
+              </View>
+
+              {routeSchedule!.time.map((time, index) => (
+                <View key={index} style={styles.schedule}>
+                  {time.map((k, i) => (
+                    <Text key={i}>{k ?? "即停"}</Text>
+                  ))}
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+    </ScrollView>
+  );
 };
 
 const FeedView = () => {
@@ -34,8 +126,8 @@ const FeedView = () => {
             sources.map((item, index) => (
               <Card
                 mode="outlined"
-                onPress={() => {
-                  openBrowserAsync(item.link);
+                onPress={async () => {
+                  await openBrowserAsync(item.link);
                 }}
                 key={index}
               >
@@ -108,6 +200,7 @@ export default function ExploreScreen() {
       return (
         <View style={styles.container}>
           <Text variant="headlineMedium" style={styles.title}>Bus Timetable</Text>
+          <BusView />
         </View>
       );
     }
